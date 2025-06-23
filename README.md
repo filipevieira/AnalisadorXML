@@ -1,7 +1,7 @@
 # Analisador de XML NFe ✨
 
 Este projeto é uma ferramenta web simples e intuitiva para analisar arquivos XML de Notas Fiscais Eletrônicas (NFe). 🧾  
-Ele permite que os usuários carreguem um arquivo XML de NFe, visualizem seu conteúdo e, de forma interativa, decomponham a chave de acesso da NFe, relacionando seus segmentos aos dados correspondentes dentro do XML.
+Ele permite que os usuários carreguem um arquivo XML de NFe, visualizem seu conteúdo e, de forma interativa, decomponham a chave de acesso da NFe, relacionando seus segmentos aos dados correspondentes dentro do XML
 
 ---
 
