@@ -1,0 +1,285 @@
+    <style>
+        /* Define a transição suave para as mudanças de tema */
+        html {
+            transition: background-color 0.3s ease;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Cor de fundo padrão para o modo claro */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinha o conteúdo ao topo da tela */
+            min-height: 100vh; /* Garante que o corpo ocupa toda a altura da viewport */
+            padding: 20px;
+            box-sizing: border-box; /* Inclui padding no tamanho total do elemento */
+            color: #334155; /* Cor do texto padrão para o modo claro */
+        }
+        /* Estilos do modo escuro para o corpo */
+        html.dark body {
+            background-color: #1a202c; /* Cor de fundo escura */
+            color: #e2e8f0; /* Cor do texto clara */
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background-color: #ffffff; /* Cor de fundo padrão do container para o modo claro */
+            border-radius: 16px; /* Bordas arredondadas para o container */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); /* Sombra suave para o container */
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        /* Estilos do modo escuro para o container */
+        html.dark .container {
+            background-color: #2d3748; /* Cor de fundo mais escura para o container */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4); /* Sombra mais pronunciada no modo escuro */
+        }
+
+        .section-title {
+            font-size: 1.75rem; /* Tamanho da fonte para títulos de seção */
+            font-weight: 700; /* Negrito para títulos */
+            color: #334155; /* Cor do título padrão para o modo claro */
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        /* Estilos do modo escuro para o título da seção */
+        html.dark .section-title {
+            color: #f8fafc; /* Cor mais clara para o título no modo escuro */
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .input-label {
+            font-weight: 500;
+            color: #475569; /* Cor do label padrão para o modo claro */
+        }
+        /* Estilos do modo escuro para o label do input */
+        html.dark .input-label {
+            color: #cbd5e1; /* Cor mais clara para o label no modo escuro */
+        }
+
+        .xml-display, .key-breakdown-display {
+            background-color: #f8fafc; /* Cor de fundo padrão para as áreas de exibição no modo claro */
+            border: 1px solid #e2e8f0; /* Borda padrão para as áreas de exibição no modo claro */
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace; /* Fonte monoespaçada para código/XML */
+            white-space: pre-wrap; /* Quebra de linha para exibir o XML corretamente */
+            word-break: break-all; /* Quebra de palavras longas */
+            max-height: 400px; /* Altura máxima para rolagem vertical */
+            overflow-y: auto; /* Adiciona rolagem vertical quando o conteúdo excede a altura máxima */
+            color: #1e293b; /* Cor do texto padrão para as áreas de exibição no modo claro */
+        }
+        /* Estilos do modo escuro para as áreas de exibição */
+        html.dark .xml-display, html.dark .key-breakdown-display {
+            background-color: #1f2937; /* Fundo mais escuro */
+            border: 1px solid #4a5568; /* Borda mais escura */
+            color: #e2e8f0; /* Texto claro */
+        }
+
+        .highlight-box {
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 2px;
+            font-weight: 600;
+        }
+        .chave-segment {
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .chave-segment:hover {
+            background-color: rgba(0, 0, 0, 0.05); /* Pequeno destaque ao passar o mouse (modo claro) */
+        }
+        html.dark .chave-segment:hover {
+            background-color: rgba(255, 255, 255, 0.08); /* Pequeno destaque ao passar o mouse (modo escuro) */
+        }
+
+        /* Cores para os segmentos da chave (modo claro) */
+        .color-0 { background-color: #fee2e2; color: #dc2626; border: 1px solid #dc2626; } /* Red */
+        .color-1 { background-color: #e0f2fe; color: #2563eb; border: 1px solid #2563eb; } /* Blue */
+        .color-2 { background-color: #dcfce7; color: #16a34a; border: 1px solid #16a34a; } /* Green */
+        .color-3 { background-color: #fef9c3; color: #d97706; border: 1px solid #d97706; } /* Yellow */
+        .color-4 { background-color: #f3e8ff; color: #9333ea; border: 1px solid #9333ea; } /* Purple */
+        .color-5 { background-color: #ecfdf5; color: #059669; border: 1px solid #059669; } /* Emerald */
+        .color-6 { background-color: #ffe4e6; color: #be185d; border: 1px solid #be185d; } /* Rose */
+        .color-7 { background-color: #e0f2f7; color: #0891b2; border: 1px solid #0891b2; } /* Cyan */
+
+        /* Cores para os segmentos da chave (modo escuro) - Ajustadas para melhor contraste */
+        html.dark .color-0 { background-color: #7f1d1d; color: #f87171; border-color: #f87171; }
+        html.dark .color-1 { background-color: #1e40af; color: #93c5fd; border-color: #93c5fd; }
+        html.dark .color-2 { background-color: #15803d; color: #86efac; border-color: #86efac; }
+        html.dark .color-3 { background-color: #b45309; color: #fcd34d; border-color: #fcd34d; }
+        html.dark .color-4 { background-color: #6b21a8; color: #d8b4fe; border-color: #d8b4fe; }
+        html.dark .color-5 { background-color: #047857; color: #6ee7b7; border-color: #6ee7b7; }
+        html.dark .color-6 { background-color: #9f1239; color: #fda4af; border-color: #fda4af; }
+        html.dark .color-7 { background-color: #0e7490; color: #67e8f9; border-color: #67e8f9; }
+
+        /* Cores para os elementos XML (mantidas para consistência se usadas no futuro em outras partes) */
+        .xml-highlight-0 { background-color: #dc2626; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-1 { background-color: #2563eb; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-2 { background-color: #16a34a; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-3 { background-color: #d97706; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-4 { background-color: #9333ea; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-5 { background-color: #059669; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-6 { background-color: #be185d; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-7 { background-color: #0891b2; color: white; padding: 2px 4px; border-radius: 4px; }
+
+        .xml-element-mapping {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+            justify-content: center;
+        }
+        .mapping-item {
+            background-color: #f1f5f9; /* Fundo do item de mapeamento (modo claro) */
+            border: 1px solid #cbd5e1; /* Borda do item de mapeamento (modo claro) */
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 180px; /* Largura fixa para cada item */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+        /* Estilos do modo escuro para o item de mapeamento */
+        html.dark .mapping-item {
+            background-color: #374151; /* Fundo mais escuro */
+            border: 1px solid #4b5563; /* Borda mais escura */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .mapping-item:hover {
+            transform: translateY(-3px); /* Efeito de elevação ao passar o mouse */
+        }
+        .mapping-item strong {
+            font-size: 1.1rem;
+            color: #1e293b; /* Cor do texto forte (modo claro) */
+            margin-bottom: 8px;
+            transition: color 0.3s ease; /* Transição para a cor do texto */
+        }
+        html.dark .mapping-item strong {
+            color: #f8fafc; /* Cor mais clara para o texto forte no modo escuro */
+        }
+        /* Cores específicas para o strong tag dentro do mapping-item (modo claro) - sobrepõe a cor padrão */
+        .mapping-item strong.color-0 { color: #dc2626 !important; }
+        .mapping-item strong.color-1 { color: #2563eb !important; }
+        .mapping-item strong.color-2 { color: #16a34a !important; }
+        .mapping-item strong.color-3 { color: #d97706 !important; }
+        .mapping-item strong.color-4 { color: #9333ea !important; }
+        .mapping-item strong.color-5 { color: #059669 !important; }
+        .mapping-item strong.color-6 { color: #be185d !important; }
+        .mapping-item strong.color-7 { color: #0891b2 !important; }
+
+        /* Cores específicas para o strong tag dentro do mapping-item (modo escuro) */
+        html.dark .mapping-item strong.color-0 { color: #f87171 !important; }
+        html.dark .mapping-item strong.color-1 { color: #93c5fd !important; }
+        html.dark .mapping-item strong.color-2 { color: #86efac !important; }
+        html.dark .mapping-item strong.color-3 { color: #fcd34d !important; }
+        html.dark .mapping-item strong.color-4 { color: #d8b4fe !important; }
+        html.dark .mapping-item strong.color-5 { color: #6ee7b7 !important; }
+        html.dark .mapping-item strong.color-6 { color: #fda4af !important; }
+        html.dark .mapping-item strong.color-7 { color: #67e8f9 !important; }
+
+        .mapping-value {
+            font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            background-color: #e2e8f0; /* Fundo do valor mapeado (modo claro) */
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: #334155; /* Cor do valor mapeado (modo claro) */
+            word-break: break-all;
+            text-align: center;
+            width: 100%;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        html.dark .mapping-value {
+            background-color: #4a5568; /* Fundo mais escuro */
+            color: #f8fafc; /* Texto claro */
+        }
+
+        /* Mensagem de erro/sucesso/info */
+        .message-box {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-weight: 500;
+            margin-top: 20px;
+            display: none; /* Escondido por padrão */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, background-color 0.3s ease, border-color 0.3s ease;
+        }
+        html.dark .message-box {
+            background-color: #2d3748;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .message-box.show {
+            display: block;
+            opacity: 1;
+        }
+        .message-box.error {
+            color: #dc2626;
+            border: 1px solid #ef4444;
+        }
+        html.dark .message-box.error {
+            color: #f87171;
+            border-color: #f87171;
+        }
+        .message-box.success {
+            color: #16a34a;
+            border: 1px solid #22c55e;
+        }
+        html.dark .message-box.success {
+            color: #86efac;
+            border-color: #86efac;
+        }
+        .message-box.info {
+            color: #3b82f6;
+            border: 1px solid #60a5fa;
+        }
+        html.dark .message-box.info {
+            color: #93c5fd;
+            border-color: #93c5fd;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #64748b; /* Cor do texto do rodapé (modo claro) */
+            margin-top: 20px;
+        }
+        html.dark .footer-text {
+            color: #94a3b8; /* Cor mais clara para o rodapé no modo escuro */
+        }
+
+        /* Responsividade para telas maiores */
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                gap: 32px;
+                padding: 40px;
+            }
+            .left-panel, .right-panel {
+                flex: 1;
+                min-width: 45%;
+            }
+            .key-breakdown-display {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .chave-segment {
+                flex-grow: 1; /* Permite que os segmentos cresçam para preencher o espaço */
+                text-align: center;
+            }
+        }
+    </style>
