@@ -1,79 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisador de XML NFe</title>
-    <!-- Inclui Tailwind CSS para estilização moderna e responsiva -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Define a fonte Inter para melhor legibilidade -->
-     <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <script type="module" src="main.js"></script>
-    <div class="container">
-        <div class="left-panel flex flex-col gap-6">
-            <h1 class="section-title">Analisador de XML NFe</h1>
-
-            <div class="input-group">
-                <label for="xmlFileInput" class="input-label">Selecione o arquivo XML da NFe:</label>
-                <input type="file" id="xmlFileInput" accept=".xml" class="block w-full text-sm text-slate-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-indigo-50 file:text-indigo-700
-                    hover:file:bg-indigo-100 cursor-pointer
-                    dark:text-slate-300 dark:file:bg-indigo-700 dark:file:text-indigo-100 dark:hover:file:bg-indigo-600">
-            </div>
-
-            <div class="flex gap-4 items-center">
-                <button id="analyzeBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg
-                    shadow-md hover:shadow-lg transition duration-200 ease-in-out transform hover:-translate-y-1
-                    dark:bg-indigo-700 dark:hover:bg-indigo-600">
-                    Analisar XML
-                </button>
-                <!-- Botão para alternar tema com ícone -->
-                <button id="themeToggleBtn" class="flex-none w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-md transition duration-200 ease-in-out
-                    dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100">
-                    <!-- Ícone do Sol (para modo claro) -->
-                    <svg id="sunIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 00-1.414 0l-.707.707a1 1 0 101.414 1.414l.707-.707a1 1 0 000-1.414zM4 10a1 1 0 01-1-1V8a1 1 0 112 0v1a1 1 0 01-1 1zm2.12-4.507a1 1 0 00-1.414 0l-.707.707a1 1 0 101.414 1.414l.707-.707a1 1 0 000-1.414zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zm-4-4.507a1 1 0 00-1.414 0l-.707.707a1 1 0 001.414 1.414l.707-.707a1 1 0 000-1.414z"/>
-                    </svg>
-                    <!-- Ícone da Lua (para modo escuro) -->
-                    <svg id="moonIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.292 13.792A8 8 0 016.208 2.708a8.003 8.003 0 0010.584 10.584z"/>
-                    </svg>
-                </button>
-            </div>
-
-
-            <div id="messageBox" class="message-box"></div>
-
-            <div>
-                <h2 class="section-title text-base">Conteúdo XML:</h2>
-                <pre id="xmlContentDisplay" class="xml-display"></pre>
-            </div>
-        </div>
-
-        <div class="right-panel flex flex-col gap-6">
-            <div>
-                <h2 class="section-title text-base">Chave de Acesso Analisada:</h2>
-                <div id="keyBreakdownDisplay" class="key-breakdown-display text-lg font-bold flex flex-wrap justify-center items-center gap-2">
-                    <!-- Segmentos da chave serão inseridos aqui dinamicamente -->
-                </div>
-            </div>
-
-            <div id="xmlMapping" class="flex flex-col gap-4 hidden">
-                <h2 class="section-title text-base">Relacionamento com Elementos XML:</h2>
-                <div id="xmlElementMapping" class="xml-element-mapping">
-                    <!-- Mapeamento dos elementos XML será inserido aqui dinamicamente -->
-                </div>
-            </div>
-        </div>
-        <p class="footer-text">Desenvolvido com ❤️ para análise de NFe.</p>
-    </div>
-
-    <script type="module">
+<script type="module">
         // Variáveis globais para Firebase (serão preenchidas pelo ambiente Canvas, se disponíveis)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
@@ -357,5 +282,3 @@
         document.addEventListener('DOMContentLoaded', initializeFirebaseAndAuth);
 
     </script>
-</body>
-</html>
