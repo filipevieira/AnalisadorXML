@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador de XML NFe</title>
+    <!-- Inclui Tailwind CSS para estilização moderna e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Define a fonte Inter para melhor legibilidade -->
+    <style>
+        /* Define a transição suave para as mudanças de tema */
+        html {
+            transition: background-color 0.3s ease;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Cor de fundo padrão para o modo claro */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinha o conteúdo ao topo da tela */
+            min-height: 100vh; /* Garante que o corpo ocupa toda a altura da viewport */
+            padding: 20px;
+            box-sizing: border-box; /* Inclui padding no tamanho total do elemento */
+            color: #334155; /* Cor do texto padrão para o modo claro */
+        }
+        /* Estilos do modo escuro para o corpo */
+        html.dark body {
+            background-color: #1a202c; /* Cor de fundo escura */
+            color: #e2e8f0; /* Cor do texto clara */
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background-color: #ffffff; /* Cor de fundo padrão do container para o modo claro */
+            border-radius: 16px; /* Bordas arredondadas para o container */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); /* Sombra suave para o container */
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        /* Estilos do modo escuro para o container */
+        html.dark .container {
+            background-color: #2d3748; /* Cor de fundo mais escura para o container */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4); /* Sombra mais pronunciada no modo escuro */
+        }
+
+        .section-title {
+            font-size: 1.75rem; /* Tamanho da fonte para títulos de seção */
+            font-weight: 700; /* Negrito para títulos */
+            color: #334155; /* Cor do título padrão para o modo claro */
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        /* Estilos do modo escuro para o título da seção */
+        html.dark .section-title {
+            color: #f8fafc; /* Cor mais clara para o título no modo escuro */
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .input-label {
+            font-weight: 500;
+            color: #475569; /* Cor do label padrão para o modo claro */
+        }
+        /* Estilos do modo escuro para o label do input */
+        html.dark .input-label {
+            color: #cbd5e1; /* Cor mais clara para o label no modo escuro */
+        }
+
+        .xml-display, .key-breakdown-display {
+            background-color: #f8fafc; /* Cor de fundo padrão para as áreas de exibição no modo claro */
+            border: 1px solid #e2e8f0; /* Borda padrão para as áreas de exibição no modo claro */
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace; /* Fonte monoespaçada para código/XML */
+            white-space: pre-wrap; /* Quebra de linha para exibir o XML corretamente */
+            word-break: break-all; /* Quebra de palavras longas */
+            max-height: 400px; /* Altura máxima para rolagem vertical */
+            overflow-y: auto; /* Adiciona rolagem vertical quando o conteúdo excede a altura máxima */
+            color: #1e293b; /* Cor do texto padrão para as áreas de exibição no modo claro */
+        }
+        /* Estilos do modo escuro para as áreas de exibição */
+        html.dark .xml-display, html.dark .key-breakdown-display {
+            background-color: #1f2937; /* Fundo mais escuro */
+            border: 1px solid #4a5568; /* Borda mais escura */
+            color: #e2e8f0; /* Texto claro */
+        }
+
+        .highlight-box {
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 2px;
+            font-weight: 600;
+        }
+        .chave-segment {
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .chave-segment:hover {
+            background-color: rgba(0, 0, 0, 0.05); /* Pequeno destaque ao passar o mouse (modo claro) */
+        }
+        html.dark .chave-segment:hover {
+            background-color: rgba(255, 255, 255, 0.08); /* Pequeno destaque ao passar o mouse (modo escuro) */
+        }
+
+        /* Cores para os segmentos da chave (modo claro) */
+        .color-0 { background-color: #fee2e2; color: #dc2626; border: 1px solid #dc2626; } /* Red */
+        .color-1 { background-color: #e0f2fe; color: #2563eb; border: 1px solid #2563eb; } /* Blue */
+        .color-2 { background-color: #dcfce7; color: #16a34a; border: 1px solid #16a34a; } /* Green */
+        .color-3 { background-color: #fef9c3; color: #d97706; border: 1px solid #d97706; } /* Yellow */
+        .color-4 { background-color: #f3e8ff; color: #9333ea; border: 1px solid #9333ea; } /* Purple */
+        .color-5 { background-color: #ecfdf5; color: #059669; border: 1px solid #059669; } /* Emerald */
+        .color-6 { background-color: #ffe4e6; color: #be185d; border: 1px solid #be185d; } /* Rose */
+        .color-7 { background-color: #e0f2f7; color: #0891b2; border: 1px solid #0891b2; } /* Cyan */
+
+        /* Cores para os segmentos da chave (modo escuro) - Ajustadas para melhor contraste */
+        html.dark .color-0 { background-color: #7f1d1d; color: #f87171; border-color: #f87171; }
+        html.dark .color-1 { background-color: #1e40af; color: #93c5fd; border-color: #93c5fd; }
+        html.dark .color-2 { background-color: #15803d; color: #86efac; border-color: #86efac; }
+        html.dark .color-3 { background-color: #b45309; color: #fcd34d; border-color: #fcd34d; }
+        html.dark .color-4 { background-color: #6b21a8; color: #d8b4fe; border-color: #d8b4fe; }
+        html.dark .color-5 { background-color: #047857; color: #6ee7b7; border-color: #6ee7b7; }
+        html.dark .color-6 { background-color: #9f1239; color: #fda4af; border-color: #fda4af; }
+        html.dark .color-7 { background-color: #0e7490; color: #67e8f9; border-color: #67e8f9; }
+
+        /* Cores para os elementos XML (mantidas para consistência se usadas no futuro em outras partes) */
+        .xml-highlight-0 { background-color: #dc2626; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-1 { background-color: #2563eb; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-2 { background-color: #16a34a; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-3 { background-color: #d97706; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-4 { background-color: #9333ea; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-5 { background-color: #059669; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-6 { background-color: #be185d; color: white; padding: 2px 4px; border-radius: 4px; }
+        .xml-highlight-7 { background-color: #0891b2; color: white; padding: 2px 4px; border-radius: 4px; }
+
+        .xml-element-mapping {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+            justify-content: center;
+        }
+        .mapping-item {
+            background-color: #f1f5f9; /* Fundo do item de mapeamento (modo claro) */
+            border: 1px solid #cbd5e1; /* Borda do item de mapeamento (modo claro) */
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 180px; /* Largura fixa para cada item */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+        /* Estilos do modo escuro para o item de mapeamento */
+        html.dark .mapping-item {
+            background-color: #374151; /* Fundo mais escuro */
+            border: 1px solid #4b5563; /* Borda mais escura */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .mapping-item:hover {
+            transform: translateY(-3px); /* Efeito de elevação ao passar o mouse */
+        }
+        .mapping-item strong {
+            font-size: 1.1rem;
+            color: #1e293b; /* Cor do texto forte (modo claro) */
+            margin-bottom: 8px;
+            transition: color 0.3s ease; /* Transição para a cor do texto */
+        }
+        html.dark .mapping-item strong {
+            color: #f8fafc; /* Cor mais clara para o texto forte no modo escuro */
+        }
+        /* Cores específicas para o strong tag dentro do mapping-item (modo claro) - sobrepõe a cor padrão */
+        .mapping-item strong.color-0 { color: #dc2626 !important; }
+        .mapping-item strong.color-1 { color: #2563eb !important; }
+        .mapping-item strong.color-2 { color: #16a34a !important; }
+        .mapping-item strong.color-3 { color: #d97706 !important; }
+        .mapping-item strong.color-4 { color: #9333ea !important; }
+        .mapping-item strong.color-5 { color: #059669 !important; }
+        .mapping-item strong.color-6 { color: #be185d !important; }
+        .mapping-item strong.color-7 { color: #0891b2 !important; }
+
+        /* Cores específicas para o strong tag dentro do mapping-item (modo escuro) */
+        html.dark .mapping-item strong.color-0 { color: #f87171 !important; }
+        html.dark .mapping-item strong.color-1 { color: #93c5fd !important; }
+        html.dark .mapping-item strong.color-2 { color: #86efac !important; }
+        html.dark .mapping-item strong.color-3 { color: #fcd34d !important; }
+        html.dark .mapping-item strong.color-4 { color: #d8b4fe !important; }
+        html.dark .mapping-item strong.color-5 { color: #6ee7b7 !important; }
+        html.dark .mapping-item strong.color-6 { color: #fda4af !important; }
+        html.dark .mapping-item strong.color-7 { color: #67e8f9 !important; }
+
+        .mapping-value {
+            font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            background-color: #e2e8f0; /* Fundo do valor mapeado (modo claro) */
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: #334155; /* Cor do valor mapeado (modo claro) */
+            word-break: break-all;
+            text-align: center;
+            width: 100%;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        html.dark .mapping-value {
+            background-color: #4a5568; /* Fundo mais escuro */
+            color: #f8fafc; /* Texto claro */
+        }
+
+        /* Mensagem de erro/sucesso/info */
+        .message-box {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-weight: 500;
+            margin-top: 20px;
+            display: none; /* Escondido por padrão */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, background-color 0.3s ease, border-color 0.3s ease;
+        }
+        html.dark .message-box {
+            background-color: #2d3748;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .message-box.show {
+            display: block;
+            opacity: 1;
+        }
+        .message-box.error {
+            color: #dc2626;
+            border: 1px solid #ef4444;
+        }
+        html.dark .message-box.error {
+            color: #f87171;
+            border-color: #f87171;
+        }
+        .message-box.success {
+            color: #16a34a;
+            border: 1px solid #22c55e;
+        }
+        html.dark .message-box.success {
+            color: #86efac;
+            border-color: #86efac;
+        }
+        .message-box.info {
+            color: #3b82f6;
+            border: 1px solid #60a5fa;
+        }
+        html.dark .message-box.info {
+            color: #93c5fd;
+            border-color: #93c5fd;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #64748b; /* Cor do texto do rodapé (modo claro) */
+            margin-top: 20px;
+        }
+        html.dark .footer-text {
+            color: #94a3b8; /* Cor mais clara para o rodapé no modo escuro */
+        }
+
+        /* Responsividade para telas maiores */
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                gap: 32px;
+                padding: 40px;
+            }
+            .left-panel, .right-panel {
+                flex: 1;
+                min-width: 45%;
+            }
+            .key-breakdown-display {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .chave-segment {
+                flex-grow: 1; /* Permite que os segmentos cresçam para preencher o espaço */
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel flex flex-col gap-6">
+            <h1 class="section-title">Analisador de XML NFe</h1>
+
+            <div class="input-group">
+                <label for="xmlFileInput" class="input-label">Selecione o arquivo XML da NFe:</label>
+                <input type="file" id="xmlFileInput" accept=".xml" class="block w-full text-sm text-slate-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-indigo-50 file:text-indigo-700
+                    hover:file:bg-indigo-100 cursor-pointer
+                    dark:text-slate-300 dark:file:bg-indigo-700 dark:file:text-indigo-100 dark:hover:file:bg-indigo-600">
+            </div>
+
+            <div class="flex gap-4 items-center">
+                <button id="analyzeBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg
+                    shadow-md hover:shadow-lg transition duration-200 ease-in-out transform hover:-translate-y-1
+                    dark:bg-indigo-700 dark:hover:bg-indigo-600">
+                    Analisar XML
+                </button>
+                <!-- Botão para alternar tema com ícone -->
+                <button id="themeToggleBtn" class="flex-none w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-md transition duration-200 ease-in-out
+                    dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100">
+                    <!-- Ícone do Sol (para modo claro) -->
+                    <svg id="sunIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 00-1.414 0l-.707.707a1 1 0 101.414 1.414l.707-.707a1 1 0 000-1.414zM4 10a1 1 0 01-1-1V8a1 1 0 112 0v1a1 1 0 01-1 1zm2.12-4.507a1 1 0 00-1.414 0l-.707.707a1 1 0 101.414 1.414l.707-.707a1 1 0 000-1.414zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zm-4-4.507a1 1 0 00-1.414 0l-.707.707a1 1 0 001.414 1.414l.707-.707a1 1 0 000-1.414z"/>
+                    </svg>
+                    <!-- Ícone da Lua (para modo escuro) -->
+                    <svg id="moonIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.292 13.792A8 8 0 016.208 2.708a8.003 8.003 0 0010.584 10.584z"/>
+                    </svg>
+                </button>
+            </div>
+
+
+            <div id="messageBox" class="message-box"></div>
+
+            <div>
+                <h2 class="section-title text-base">Conteúdo XML:</h2>
+                <pre id="xmlContentDisplay" class="xml-display"></pre>
+            </div>
+        </div>
+
+        <div class="right-panel flex flex-col gap-6">
+            <div>
+                <h2 class="section-title text-base">Chave de Acesso Analisada:</h2>
+                <div id="keyBreakdownDisplay" class="key-breakdown-display text-lg font-bold flex flex-wrap justify-center items-center gap-2">
+                    <!-- Segmentos da chave serão inseridos aqui dinamicamente -->
+                </div>
+            </div>
+
+            <div id="xmlMapping" class="flex flex-col gap-4 hidden">
+                <h2 class="section-title text-base">Relacionamento com Elementos XML:</h2>
+                <div id="xmlElementMapping" class="xml-element-mapping">
+                    <!-- Mapeamento dos elementos XML será inserido aqui dinamicamente -->
+                </div>
+            </div>
+        </div>
+        <p class="footer-text">Desenvolvido com ❤️ para análise de NFe.</p>
+    </div>
+
+    <script type="module">
+        // Variáveis globais para Firebase (serão preenchidas pelo ambiente Canvas, se disponíveis)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Importações do Firebase SDK - necessárias para autenticação no ambiente Canvas
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // O Firestore não é diretamente usado nesta aplicação, mas a importação pode ser mantida para futura expansão
+        // import { getFirestore, doc, getDoc, setDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let app;
+        let auth;
+        let userId = null; // Armazena o ID do usuário autenticado (para fins de exemplo/futuro uso)
+
+        /**
+         * Exibe uma mensagem na interface do usuário.
+         * @param {string} message - A mensagem a ser exibida.
+         * @param {'info' | 'success' | 'error'} type - O tipo da mensagem (controla a cor e estilo).
+         */
+        function showMessage(message, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            // Reseta as classes e adiciona as necessárias para exibir e estilizar a mensagem
+            messageBox.className = 'message-box show';
+            if (type === 'error') {
+                messageBox.classList.add('error');
+            } else if (type === 'success') {
+                messageBox.classList.add('success');
+            } else {
+                messageBox.classList.add('info');
+            }
+            // Oculta a mensagem automaticamente após 5 segundos
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 5000);
+        }
+
+        /**
+         * Inicializa o Firebase e tenta autenticar o usuário.
+         * Tenta autenticar com um token personalizado se disponível, caso contrário, autentica anonimamente.
+         */
+        async function initializeFirebaseAndAuth() {
+            try {
+                // Verifica se a configuração do Firebase foi fornecida
+                if (Object.keys(firebaseConfig).length > 0) {
+                    app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+
+                    // Tenta autenticar com o token personalizado do ambiente Canvas
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Autenticado com token personalizado.");
+                    } else {
+                        // Se não houver token personalizado, autentica anonimamente
+                        await signInAnonymously(auth);
+                        console.log("Autenticado anonimamente.");
+                    }
+
+                    // Listener para mudanças no estado de autenticação
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            userId = user.uid; // Armazena o UID do usuário
+                            console.log("User ID:", userId);
+                        } else {
+                            userId = null;
+                            console.log("Nenhum usuário logado.");
+                        }
+                    });
+                } else {
+                    console.warn("Firebase config não fornecida. A aplicação funcionará sem autenticação/Firestore.");
+                }
+            } catch (error) {
+                console.error("Erro ao inicializar Firebase ou autenticar:", error);
+                showMessage(`Erro ao inicializar o sistema de autenticação: ${error.message}`, 'error');
+            }
+        }
+
+        // --- Lógica do Tema Claro/Escuro ---
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+
+        /**
+         * Atualiza a visibilidade dos ícones de sol/lua com base no tema atual.
+         */
+        function updateThemeIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+
+        // Adiciona o evento de clique ao botão de alternância de tema
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark'); // Alterna a classe 'dark' no elemento html
+            // Salva a preferência do usuário no localStorage
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+            updateThemeIcons(); // Atualiza os ícones imediatamente após a alternância
+        });
+
+        // Carrega a preferência de tema do usuário ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verifica a preferência do localStorage ou do sistema operacional
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateThemeIcons(); // Define o estado inicial dos ícones com base no tema carregado
+        });
+
+        // --- Lógica de Análise do XML ---
+        // Adiciona um listener ao botão de análise
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeXml);
+        // Adiciona um listener para quando um novo arquivo XML é selecionado, limpando os resultados anteriores
+        document.getElementById('xmlFileInput').addEventListener('change', function() {
+            document.getElementById('xmlContentDisplay').textContent = '';
+            document.getElementById('keyBreakdownDisplay').innerHTML = '';
+            document.getElementById('xmlElementMapping').innerHTML = '';
+            document.getElementById('xmlMapping').classList.add('hidden');
+            document.getElementById('messageBox').classList.remove('show', 'error', 'success', 'info'); // Limpa mensagens
+        });
+
+        /**
+         * Função principal para analisar o arquivo XML da NFe.
+         */
+        async function analyzeXml() {
+            const fileInput = document.getElementById('xmlFileInput');
+            const xmlContentDisplay = document.getElementById('xmlContentDisplay');
+            const keyBreakdownDisplay = document.getElementById('keyBreakdownDisplay');
+            const xmlElementMapping = document.getElementById('xmlElementMapping');
+            const xmlMappingSection = document.getElementById('xmlMapping');
+
+            // Limpa resultados anteriores na interface
+            keyBreakdownDisplay.innerHTML = '';
+            xmlElementMapping.innerHTML = '';
+            xmlMappingSection.classList.add('hidden'); // Esconde a seção de mapeamento por padrão
+
+            // Verifica se um arquivo foi selecionado
+            if (fileInput.files.length === 0) {
+                showMessage('Por favor, selecione um arquivo XML primeiro.', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader(); // Cria um leitor de arquivos
+
+            reader.onload = function(e) {
+                const xmlString = e.target.result; // Obtém o conteúdo do arquivo como string
+                xmlContentDisplay.textContent = xmlString; // Exibe o XML completo na área de visualização
+
+                try {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlString, "application/xml"); // Faz o parsing do XML
+
+                    // Verifica se houve erro de parsing (por exemplo, XML malformado)
+                    if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+                        console.error("Erro ao analisar o XML:", xmlDoc.getElementsByTagName("parsererror")[0].textContent);
+                        showMessage('Erro ao analisar o arquivo XML. Verifique se o XML está bem formado.', 'error');
+                        return;
+                    }
+
+                    // Tenta encontrar a chave de acesso no atributo "Id" da tag <infNFe>
+                    const infNFeElement = xmlDoc.querySelector('infNFe');
+                    let chaveNFe = '';
+                    if (infNFeElement && infNFeElement.getAttribute('Id')) {
+                        // A chave está no atributo Id e geralmente começa com "NFe", então removemos "NFe"
+                        chaveNFe = infNFeElement.getAttribute('Id').replace('NFe', '');
+                    }
+
+                    // Validação básica da chave de acesso
+                    if (!chaveNFe || chaveNFe.length !== 44 || !/^\d{44}$/.test(chaveNFe)) {
+                        showMessage('Chave de Acesso (ID da NFe) não encontrada ou em formato inválido (esperado 44 dígitos numéricos).', 'error');
+                        return;
+                    }
+
+                    showMessage('XML analisado com sucesso!', 'success');
+                    xmlMappingSection.classList.remove('hidden'); // Mostra a seção de mapeamento
+
+                    // Mapeamento das partes da chave de acesso e seus respectivos comprimentos e tags XML
+                    const chaveParts = [
+                        { name: 'cUF', length: 2, colorIndex: 0, tag: 'cUF' },
+                        { name: 'AAMM', length: 4, colorIndex: 1, tag: 'dhEmi, dhSaiEnt' }, // Mês e ano da emissão (derivado de dhEmi/dhSaiEnt)
+                        { name: 'CNPJ Emitente', length: 14, colorIndex: 2, tag: 'CNPJ' },
+                        { name: 'Mod. (Modelo)', length: 2, colorIndex: 3, tag: 'mod' },
+                        { name: 'Série', length: 3, colorIndex: 4, tag: 'serie' },
+                        { name: 'Núm. NF', length: 9, colorIndex: 5, tag: 'nNF' },
+                        { name: 'Cód. Numérico', length: 8, colorIndex: 6, tag: 'cNF' },
+                        { name: 'Dígito Verif.', length: 1, colorIndex: 7, tag: 'cDV' }
+                    ];
+
+                    let currentIndex = 0;
+                    let extractedValues = {}; // Armazena os valores extraídos para exibição
+
+                    // Exibe a chave de acesso dividida em segmentos coloridos
+                    chaveParts.forEach((part, index) => {
+                        const segment = chaveNFe.substring(currentIndex, currentIndex + part.length);
+                        extractedValues[part.name] = segment; // Guarda o segmento
+
+                        const span = document.createElement('span');
+                        span.textContent = segment;
+                        span.title = `${part.name}: ${segment}`; // Adiciona um tooltip
+                        // Adiciona classes de estilo e cor
+                        span.classList.add('highlight-box', `color-${part.colorIndex}`, 'chave-segment');
+                        keyBreakdownDisplay.appendChild(span);
+                        currentIndex += part.length;
+                    });
+
+                    // Exibe o mapeamento detalhado com os valores extraídos do XML
+                    chaveParts.forEach(part => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.classList.add('mapping-item');
+
+                        const tagName = part.tag.split(',')[0]; // Pega a primeira tag para tentar buscar o valor no XML
+                        const xmlValue = getXmlValue(xmlDoc, tagName); // Obtém o valor da tag XML
+
+                        let displayValue = xmlValue;
+                        // Lógica especial para AAMM (Ano/Mês da emissão)
+                        if (part.name === 'AAMM') {
+                            const dhEmi = xmlDoc.querySelector('dhEmi')?.textContent || '';
+                            const dhSaiEnt = xmlDoc.querySelector('dhSaiEnt')?.textContent || '';
+                            let dateString = dhEmi || dhSaiEnt;
+                            if (dateString) {
+                                // Assume formato YYYY-MM-DDTHH:MM:SS-HH:MM e extrai AAMM
+                                const year = dateString.substring(0, 4);
+                                const month = dateString.substring(5, 7);
+                                displayValue = `${year}${month}`;
+                            } else {
+                                displayValue = 'Não encontrado';
+                            }
+                        } else if (!xmlValue) {
+                            displayValue = 'Não encontrado';
+                        }
+
+                        // Constrói o HTML para cada item de mapeamento
+                        itemDiv.innerHTML = `
+                            <strong class="text-center ${`color-${part.colorIndex}`}"">${part.name}</strong>
+                            <span class="mapping-value">${displayValue}</span>
+                            <span class="mt-2 text-xs text-gray-500 dark:text-gray-400">Chave: ${extractedValues[part.name]}</span>
+                            <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">XML Tag: &lt;${part.tag}&gt;</span>
+                        `;
+                        xmlElementMapping.appendChild(itemDiv);
+                    });
+
+                } catch (error) {
+                    // Captura e exibe erros inesperados durante a análise
+                    console.error("Erro inesperado durante a análise:", error);
+                    showMessage(`Ocorreu um erro inesperado: ${error.message}`, 'error');
+                }
+            };
+
+            // Lida com erros na leitura do arquivo
+            reader.onerror = function() {
+                showMessage('Erro ao ler o arquivo.', 'error');
+            };
+
+            // Inicia a leitura do arquivo como texto
+            reader.readAsText(file);
+        }
+
+        /**
+         * Função auxiliar para obter o valor de um elemento XML.
+         * @param {Document} xmlDoc - O documento XML.
+         * @param {string} tagName - O nome da tag XML a ser buscada.
+         * @returns {string | null} O conteúdo de texto da tag ou null se não encontrada.
+         */
+        function getXmlValue(xmlDoc, tagName) {
+            const element = xmlDoc.querySelector(tagName);
+            return element ? element.textContent.trim() : null;
+        }
+
+        // Inicializa o Firebase e a autenticação quando o DOM estiver completamente carregado
+        document.addEventListener('DOMContentLoaded', initializeFirebaseAndAuth);
+
+    </script>
+</body>
+</html>
